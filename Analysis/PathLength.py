@@ -15,6 +15,62 @@ noise_angle_human_ImageAnaylsis = [0.01, 0.01, 0.01]  # rad
 
 resolution_xy_of_ps = [0.08, 0.045]  # cm
 resolution_angle_of_ps = [0.05, 0.05]  # cm
+periodicity = {'H': 2, 'I': 2, 'RASH': 2, 'LASH': 2, 'SPT': 1, 'T': 1}
+
+
+def resolution(geometry: tuple, size: str, solver: str, shape: str):
+    if geometry == ('MazeDimensions_human.xlsx', 'LoadDimensions_human.xlsx'):
+        Res = {'Large': 0.1, 'L': 0.1, 'Medium': 0.07, 'M': 0.07, 'Small Far': 0.02, 'Small Near': 0.02, 'S': 0.02}
+        return Res[size] * 0.5  # had to add twice the resolution, because the fast marching method was not able to pass
+    else:
+        raise ValueError
+
+
+def ConnectAngle(angle, shape):
+    # This function writes the angle as absolute angle compared to the beginning angle (which was within a certain 0
+    # to 2pi range) Write the first angle in the connected angle array
+
+    ''' turn the shape by 2/p * np.pi and it looks the same'''
+    p = periodicity[shape]
+
+    ''' Wrap it! '''
+    angle = (angle + np.pi / p) % (2 * np.pi / p) - np.pi / p
+
+    ''' Make NaNs and the adjacent 5 values NaNs'''
+    original_nan = np.where(np.isnan(angle))[0]
+
+    for i in range(5):
+        if len(original_nan) > 0 and original_nan[-1] - i > 0:
+            angle[original_nan - i] = np.NaN
+        elif len(original_nan) > 0 and len(angle) - 1 > original_nan[-1] + i:
+            angle[original_nan + i] = np.NaN
+    not_new_nan = ~np.isnan(angle)
+
+    ''' get rid of all NaNs '''
+    angle = angle[~np.isnan(angle)]
+
+    # ok = ~np.isnan(angle)
+    # xp = ok.ravel().nonzero()[0]
+    # fp = angle[~np.isnan(angle)]
+    # x  = np.isnan(angle).ravel().nonzero()[0]
+
+    ''' unwrap '''
+    # angle[np.isnan(angle)] = np.interp(x, xp, fp)
+    unwraped = 1 / p * np.unwrap(p * angle)
+    returner = np.empty([len(not_new_nan)])
+
+    ''' reinsert NaNs '''
+    i, ii = 0, 0
+    for insert in not_new_nan:
+        if insert:
+            returner[ii] = unwraped[i]
+            i = i + 1
+        else:
+            returner[ii] = np.NaN
+        ii = ii + 1
+    # unwraped[originalNaN[0]] = np.NaN
+
+    return returner
 
 
 class PathLength:
@@ -82,7 +138,9 @@ class PathLength:
         return translation + archlength
 
     def average_radius(self):
-        return Maze(self.x).average_radius()
+        av_radius = {'Large': 4.899, 'Medium': 2.441, 'Small Far': 1.198, 'Small Near': 1.198}  # this is only for
+        # humans
+        return av_radius[self.x.size]
 
     def calculate_path_length(self, rot: bool = True, frames: list = None):
         """
@@ -127,15 +185,6 @@ class PathLength:
                 ang_list.append(ang)
         plt.plot(np.array(pos_list)[:, 0], np.array(pos_list)[:, 1], color='k')
         plt.show()
-
-    def minimal(self):
-        if self.x.shape in ['SPT']:
-            ideal_filename = minimal_filename(self.x.size, self.x.shape, self.x.geometry(), self.x.initial_cond())
-            ideal = get(ideal_filename)
-            return PathLength(ideal).per_experiment() * \
-                   Maze(self.x).exit_size/Maze(ideal, geometry=self.x.geometry).exit_size
-        else:
-            return np.nan
 
 
 if __name__ == '__main__':

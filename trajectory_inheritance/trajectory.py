@@ -126,22 +126,10 @@ class Trajectory:
         return new
 
     def geometry(self):
-        pass
-
-    def initial_cond(self):
-        """
-        We changed the initial condition. First, we had the SPT start between the two slits.
-        Later we made it start in the back of the room.
-        :return: str 'back' or 'front' depending on where the shape started
-        """
-        if self.shape != 'SPT':
-            return None
-        elif self.position[0, 0] < Maze(self).slits[0]:
-            return 'back'
-        return 'front'
-
-    def communication(self):
-        return False
+        if self.solver == 'human':
+            return ('MazeDimensions_human.xlsx', 'LoadDimensions_human.xlsx')
+        else:
+            raise ValueError
 
 
 class Trajectory_part(Trajectory):
@@ -177,7 +165,6 @@ def get(filename) -> Trajectory:
     # this is local on your computer
     if filename in os.listdir(directory):
         with open(path.join(directory, filename), 'rb') as f:
-            print('You are loading ' + filename + 'from local copy.')
             x = Trajectory()
             (x.shape, x.size, x.solver, x.filename, x.fps, x.position, x.angle, x.frames, x.winner) = pickle.load(f)
         return x

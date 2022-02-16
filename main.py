@@ -49,8 +49,8 @@ if __name__ == '__main__':
             # trajectory.angle.__class__ gives you the class of your object
 
             # TODO Itay: Plot position (x, t), plot (speed, t) (-> matplotlib.pyplot)
-            plt.figure()
-            plt.plot(trajectory.angle)
+            # plt.figure()
+            # plt.plot(trajectory.angle)
 
             # frames = find_acceleration_frames(traj)
             frames = [1, 100]
