@@ -3,11 +3,37 @@ from Analysis.PathLength import PathLength
 from matplotlib import pyplot as plt
 from Directories import directory
 import os
+import numpy as np
 
 
-def typical_v_max() -> float:
-    # TODO Rotation students: Find typical top speed
-    return float()
+def smooth_v(v) -> np.array:
+    """
+    Smooth the v using np.medfilt (smoothing window ~30)
+    :param v: velocity
+    :return: smoothed velocity
+    """
+
+    return
+
+
+def v_max(v) -> float:
+    """
+    :param v: velocity
+    :return: maximal velocity
+    """
+
+    return
+
+
+def acceleration_frames(v, v_max) -> tuple:
+    """
+
+    """
+    f1 = 0
+    f2 = 100
+    return f1, f2
+
+
 # how long does it take for the shape to reach from 0 to v_max or from v_max to 0? Better: How much path is traversed.
 
 
@@ -44,18 +70,22 @@ if __name__ == '__main__':
         for name in exp[size]:
             trajectory = get(name)
 
+            # Variables you can access
             # trajectory.position
             # trajectory.angle
-            # trajectory.angle.__class__ gives you the class of your object
+            # trajectory.fps gives frame rate
 
-            # TODO Itay: Plot position (x, t), plot (speed, t) (-> matplotlib.pyplot)
-            # plt.figure()
-            # plt.plot(trajectory.angle)
+            # TODO: Plot position (x, t), plot (v, t) (-> matplotlib.pyplot), v = np.sqrt((v_x**2 + v_y**2)
 
-            # frames = find_acceleration_frames(traj)
-            frames = [1, 100]
+            # TODO: smooth_v, plot v
+
+            # TODO: Write function v_max()
+
+            # TODO: Write function find_acceleration_frames
+            frames = find_acceleration_frames(trajectory)
+
             path_list.append(PathLength(trajectory).calculate_path_length(frames=frames))
 
         # resolution_dict[size] = resolution(size, shape, solver, geometry, np.mean(path_list))
+        resolution_dict[size] = np.mean(path_list)
     print(resolution_dict)
-
